@@ -25,6 +25,7 @@
 #define RB_TREE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 struct rb_node {
     uintptr_t parent;

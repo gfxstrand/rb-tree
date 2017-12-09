@@ -22,3 +22,59 @@
  */
 
 #include "rb_tree.h"
+
+#include <stdlib.h>
+#include <assert.h>
+
+#define RB_TREE_ENABLE_ASSERTS
+
+#ifdef RB_TREE_ENABLE_ASSERTS
+#   define RB_TREE_ASSERT(...) assert(__VA_ARGS__)
+#else
+#   define RB_TREE_ASSERT(...) (void)0
+#endif
+
+static bool
+rb_node_is_black(struct rb_node *n)
+{
+    /* NULL nodes are leaves and therefore black */
+    return (n == NULL) || (n->parent & 1);
+}
+
+static bool
+rb_node_is_red(struct rb_node *n)
+{
+    return !rb_node_is_black(n);
+}
+
+static void
+rb_node_set_black(struct rb_node *n)
+{
+    n->parent |= 1;
+}
+
+static void
+rb_node_set_red(struct rb_node *n)
+{
+    n->parent &= ~1ull;
+}
+
+static void
+rb_node_copy_color(struct rb_node *dst, struct rb_node *src)
+{
+    dst->parent = (dst->parent & ~1ull) | (src->parent & 1);
+}
+
+static struct rb_node *
+rb_node_parent(struct rb_node *n)
+{
+    struct rb_node *p = (struct rb_node *)(n->parent & ~1ull);
+    RB_TREE_ASSERT(p == NULL || n == p->left || n == p->right);
+    return p;
+}
+
+static void
+rb_node_set_parent(struct rb_node *n, struct rb_node *p)
+{
+    n->parent = (n->parent & 1) | (uintptr_t)p;
+}
