@@ -24,6 +24,7 @@
 #include "rb_tree.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #define RB_TREE_ENABLE_ASSERTS
@@ -132,4 +133,77 @@ rb_tree_rotate_right(struct rb_tree *T, struct rb_node *y)
     rb_tree_splice(T, y, x);
     x->right = y;
     rb_node_set_parent(y, x);
+}
+
+void
+rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
+                  struct rb_node *node, bool insert_left)
+{
+    RB_TREE_ASSERT(node);
+
+    /* This sets null children, parent, and a color of red */
+    memset(node, 0, sizeof(*node));
+
+    if (parent == NULL) {
+        RB_TREE_ASSERT(T->root == NULL);
+        T->root = node;
+        rb_node_set_black(node);
+        return;
+    }
+
+    if (insert_left) {
+        RB_TREE_ASSERT(parent->left == NULL);
+        parent->left = node;
+    } else {
+        RB_TREE_ASSERT(parent->right == NULL);
+        parent->right = node;
+    }
+    rb_node_set_parent(node, parent);
+
+    /* Now we do the insertion fixup */
+    struct rb_node *z = node;
+    while (rb_node_is_red(rb_node_parent(z))) {
+        struct rb_node *z_p = rb_node_parent(z);
+        struct rb_node *z_p_p = rb_node_parent(z_p);
+        RB_TREE_ASSERT(z_p_p != NULL);
+        if (z_p == z_p_p->left) {
+            struct rb_node *y = z_p_p->right;
+            if (rb_node_is_red(y)) {
+                rb_node_set_black(z_p);
+                rb_node_set_black(y);
+                rb_node_set_red(z_p_p);
+                z = z_p_p;
+            } else {
+                if (z == z_p->right) {
+                    z = z_p;
+                    rb_tree_rotate_left(T, z);
+                    /* We changed z */
+                    z_p = rb_node_parent(z);
+                    z_p_p = rb_node_parent(z_p);
+                }
+                rb_node_set_black(z_p);
+                rb_node_set_red(z_p_p);
+                rb_tree_rotate_right(T, z_p_p);
+            }
+        } else {
+            struct rb_node *y = z_p_p->left;
+            if (rb_node_is_red(y)) {
+                rb_node_set_black(z_p);
+                rb_node_set_black(y);
+                rb_node_set_red(z_p_p);
+                z = z_p_p;
+            } else {
+                if (z == z_p->left) {
+                    z = z_p;
+                    rb_tree_rotate_right(T, z);
+                    /* We changed z */
+                    z_p = rb_node_parent(z);
+                    z_p_p = rb_node_parent(z_p);
+                }
+                rb_node_set_black(z_p);
+                rb_node_set_red(z_p_p);
+                rb_tree_rotate_left(T, z_p_p);
+            }
+        }
+    }
 }
