@@ -313,6 +313,34 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
     rb_node_set_black(x);
 }
 
+struct rb_node *
+rb_tree_first(struct rb_tree *T)
+{
+    return rb_node_minimum(T->root);
+}
+
+struct rb_node *
+rb_node_next(struct rb_node *node)
+{
+    if (node->right) {
+        /* If we have a right child, then the next thing (compared to this
+         * node) is the left-most child of our right child.
+         */
+        return rb_node_minimum(node->right);
+    } else {
+        /* If node doesn't have a right child, crawl back up the to the
+         * left until we hit a parent to the right.
+         */
+        struct rb_node *p = rb_node_parent(node);
+        while (p && node == p->right) {
+            node = p;
+            p = rb_node_parent(node);
+        }
+        RB_TREE_ASSERT(p == NULL || node == p->left);
+        return p;
+    }
+}
+
 static void
 validate_rb_node(struct rb_node *n, int black_depth)
 {

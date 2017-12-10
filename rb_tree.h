@@ -101,6 +101,15 @@ rb_tree_insert(struct rb_tree *T, struct rb_node *node,
  */
 void rb_tree_remove(struct rb_tree *T, struct rb_node *z);
 
+struct rb_node *rb_tree_first(struct rb_tree *T);
+
+struct rb_node *rb_node_next(struct rb_node *node);
+
+#define rb_tree_foreach(__type, __pos, __T, __field) \
+   for (__type *__pos = rb_node_data(__type, rb_tree_first(__T), __field); \
+        &__pos->__field != NULL; \
+        __pos = rb_node_data(__type, rb_node_next(&__pos->__field), __field))
+
 /** Validate a red-black tree
  *
  * This function walks the tree and validates that this is a valid red-
