@@ -55,7 +55,7 @@ rb_test_node_cmp(const struct rb_node *a, const struct rb_node *b)
 }
 
 static void
-validate_tree_order(struct rb_tree *tree)
+validate_tree_order(struct rb_tree *tree, unsigned expected_count)
 {
     struct rb_test_node *prev = NULL;
     unsigned max_val = 0;
@@ -76,7 +76,7 @@ validate_tree_order(struct rb_tree *tree)
         prev = n;
         count++;
     }
-    assert(count == ARRAY_SIZE(test_numbers));
+    assert(count == expected_count);
 }
 
 int main()
@@ -90,7 +90,6 @@ int main()
         nodes[i].key = test_numbers[i];
         rb_tree_insert(&tree, &nodes[i].node, rb_test_node_cmp);
         rb_tree_validate(&tree);
+        validate_tree_order(&tree, i + 1);
     }
-
-    validate_tree_order(&tree);
 }
