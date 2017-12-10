@@ -80,6 +80,14 @@ rb_node_set_parent(struct rb_node *n, struct rb_node *p)
     n->parent = (n->parent & 1) | (uintptr_t)p;
 }
 
+static struct rb_node *
+rb_node_minimum(struct rb_node *node)
+{
+    while (node->left)
+        node = node->left;
+    return node;
+}
+
 void
 rb_tree_init(struct rb_tree *T)
 {
@@ -229,9 +237,7 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
         rb_tree_splice(T, z, z->left);
     } else {
         /* Find the minimum sub-node of z->right */
-        y = z->right;
-        while (y->left)
-            y = y->left;
+        y = rb_node_minimum(z->right);
         y_was_black = rb_node_is_black(y);
 
         x = y->right;
