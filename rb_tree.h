@@ -38,6 +38,8 @@ struct rb_tree {
     struct rb_node *root;
 };
 
+void rb_tree_init(struct rb_tree *T);
+
 /** Insert a node into a tree at a particular location
  *
  * This function should probably not be used directly as it relies on the

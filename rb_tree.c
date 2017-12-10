@@ -80,6 +80,12 @@ rb_node_set_parent(struct rb_node *n, struct rb_node *p)
     n->parent = (n->parent & 1) | (uintptr_t)p;
 }
 
+void
+rb_tree_init(struct rb_tree *T)
+{
+    T->root = NULL;
+}
+
 /**
  * Replace the subtree of T rooted at u with the subtree rooted at v
  *
