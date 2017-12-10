@@ -305,3 +305,39 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
     }
     rb_node_set_black(x);
 }
+
+static void
+validate_rb_node(struct rb_node *n, int black_depth)
+{
+    if (n == NULL) {
+        assert(black_depth == 0);
+        return;
+    }
+
+    if (rb_node_is_black(n)) {
+        black_depth--;
+    } else {
+        assert(rb_node_is_black(n->left));
+        assert(rb_node_is_black(n->right));
+    }
+
+    validate_rb_node(n->left, black_depth);
+    validate_rb_node(n->right, black_depth);
+}
+
+void
+rb_tree_validate(struct rb_tree *T)
+{
+    if (T->root == NULL)
+        return;
+
+    RB_TREE_ASSERT(rb_node_is_black(T->root));
+
+    unsigned black_depth = 0;
+    for (struct rb_node *n = T->root; n; n = n->left) {
+        if (rb_node_is_black(n))
+            black_depth++;
+    }
+
+    validate_rb_node(T->root, black_depth);
+}

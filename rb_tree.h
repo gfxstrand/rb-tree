@@ -97,4 +97,11 @@ rb_tree_insert(struct rb_tree *T, struct rb_node *node,
  */
 void rb_tree_remove(struct rb_tree *T, struct rb_node *z);
 
+/** Validate a red-black tree
+ *
+ * This function walks the tree and validates that this is a valid red-
+ * black tree.  If anything is wrong, it will assert-fail.
+ */
+void rb_tree_validate(struct rb_tree *T);
+
 #endif /* RB_TREE_H */
