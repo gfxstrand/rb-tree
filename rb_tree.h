@@ -25,6 +25,7 @@
 #define RB_TREE_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -39,6 +40,9 @@ struct rb_tree {
 };
 
 void rb_tree_init(struct rb_tree *T);
+
+#define rb_node_data(__type, __node, __field) \
+    ((__type *)(((char *)(__node)) - offsetof(__type, __field)))
 
 /** Insert a node into a tree at a particular location
  *
