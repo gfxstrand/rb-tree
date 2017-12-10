@@ -89,4 +89,12 @@ rb_tree_insert(struct rb_tree *T, struct rb_node *node,
     rb_tree_insert_at(T, y, node, left);
 }
 
+/** Remove a node from a tree
+ *
+ * \param   T       The red-black tree from which to remove the node
+ *
+ * \param   node    The node to remove
+ */
+void rb_tree_remove(struct rb_tree *T, struct rb_node *z);
+
 #endif /* RB_TREE_H */
