@@ -54,6 +54,31 @@ rb_test_node_cmp(const struct rb_node *a, const struct rb_node *b)
     return ta->key < tb->key;
 }
 
+static void
+validate_tree_order(struct rb_tree *tree)
+{
+    struct rb_test_node *prev = NULL;
+    unsigned max_val = 0;
+    unsigned count = 0;
+    rb_tree_foreach(struct rb_test_node, n, tree, node) {
+        /* Everything should be in increasing order */
+        assert(n->key >= max_val);
+        if (n->key > max_val) {
+            max_val = n->key;
+        } else {
+            /* Things should be stable, i.e., given equal keys, they should
+             * show up in the list in order of insertion.  We insert them
+             * in the order they are in in the array.
+             */
+            if (prev == NULL || prev < n);
+        }
+
+        prev = n;
+        count++;
+    }
+    assert(count == ARRAY_SIZE(test_numbers));
+}
+
 int main()
 {
     struct rb_test_node nodes[ARRAY_SIZE(test_numbers)];
@@ -66,4 +91,6 @@ int main()
         rb_tree_insert(&tree, &nodes[i].node, rb_test_node_cmp);
         rb_tree_validate(&tree);
     }
+
+    validate_tree_order(&tree);
 }
