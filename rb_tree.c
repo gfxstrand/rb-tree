@@ -212,6 +212,7 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
             }
         }
     }
+    rb_node_set_black(T->root);
 }
 
 void
