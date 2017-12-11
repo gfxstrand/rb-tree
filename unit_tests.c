@@ -92,4 +92,10 @@ int main()
         rb_tree_validate(&tree);
         validate_tree_order(&tree, i + 1);
     }
+
+    for (unsigned i = 0; i < ARRAY_SIZE(test_numbers); i++) {
+        rb_tree_remove(&tree, &nodes[i].node);
+        rb_tree_validate(&tree);
+        validate_tree_order(&tree, ARRAY_SIZE(test_numbers) - i - 1);
+    }
 }
