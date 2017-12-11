@@ -110,7 +110,7 @@ void rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
  */
 static inline void
 rb_tree_insert(struct rb_tree *T, struct rb_node *node,
-               bool (*cmp)(const struct rb_node *, const struct rb_node *))
+               int (*cmp)(const struct rb_node *, const struct rb_node *))
 {
     /* This function is declared inline in the hopes that the compiler can
      * optimize away the comparison function pointer call.
@@ -120,7 +120,7 @@ rb_tree_insert(struct rb_tree *T, struct rb_node *node,
     bool left = false;
     while (x != NULL) {
         y = x;
-        left = cmp(node, x);
+        left = cmp(node, x) < 0;
         if (left)
             x = x->left;
         else

@@ -44,13 +44,13 @@ struct rb_test_node {
     struct rb_node node;
 };
 
-bool
+int
 rb_test_node_cmp(const struct rb_node *a, const struct rb_node *b)
 {
     struct rb_test_node *ta = rb_node_data(struct rb_test_node, a, node);
     struct rb_test_node *tb = rb_node_data(struct rb_test_node, b, node);
 
-    return ta->key < tb->key;
+    return ta->key - tb->key;
 }
 
 static void
