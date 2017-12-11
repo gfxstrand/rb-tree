@@ -326,7 +326,7 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
 struct rb_node *
 rb_tree_first(struct rb_tree *T)
 {
-    return rb_node_minimum(T->root);
+    return T->root ? rb_node_minimum(T->root) : NULL;
 }
 
 struct rb_node *
