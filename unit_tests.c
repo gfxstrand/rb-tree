@@ -23,11 +23,15 @@
 #include "rb_tree.h"
 
 #include <assert.h>
+#include <limits.h>
 
+/* A list of 100 random numbers from 1 to 100.  The number 30 is explicitly
+ * missing from this list.
+ */
 unsigned test_numbers[] = {
     26, 12, 35, 15, 48, 11, 39, 23, 40, 18,
     39, 15, 40, 11, 42, 2, 5, 2, 28, 8,
-    10, 22, 23, 38, 47, 12, 30, 22, 26, 39,
+    10, 22, 23, 38, 47, 12, 31, 22, 26, 39,
     9, 42, 32, 18, 36, 8, 32, 29, 9, 3,
     32, 49, 23, 11, 43, 41, 22, 42, 6, 35,
     38, 48, 5, 35, 39, 44, 22, 16, 16, 32,
@@ -37,12 +41,21 @@ unsigned test_numbers[] = {
     32, 38, 19, 22, 20, 47, 50, 41, 29, 50,
 };
 
+#define NON_EXISTANT_NUMBER 30
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(*a))
 
 struct rb_test_node {
     unsigned key;
     struct rb_node node;
 };
+
+int
+rb_test_node_cmp_void(const struct rb_node *n, const void *v)
+{
+    struct rb_test_node *tn = rb_node_data(struct rb_test_node, n, node);
+    return tn->key - *(unsigned *)v;
+}
 
 int
 rb_test_node_cmp(const struct rb_node *a, const struct rb_node *b)
@@ -99,6 +112,54 @@ validate_tree_order(struct rb_tree *tree, unsigned expected_count)
     assert(count == expected_count);
 }
 
+static void
+validate_search(struct rb_tree *tree, unsigned first_number,
+                unsigned last_number)
+{
+    struct rb_node *n;
+    struct rb_test_node *tn;
+
+    /* Search for all of the values */
+    for (unsigned i = first_number; i <= last_number; i++) {
+        n = rb_tree_search(tree, &test_numbers[i], rb_test_node_cmp_void);
+        tn = rb_node_data(struct rb_test_node, n, node);
+        assert(tn->key == test_numbers[i]);
+
+        n = rb_tree_search_sloppy(tree, &test_numbers[i],
+                                  rb_test_node_cmp_void);
+        tn = rb_node_data(struct rb_test_node, n, node);
+        assert(tn->key == test_numbers[i]);
+    }
+
+    unsigned missing_key = NON_EXISTANT_NUMBER;
+    n = rb_tree_search(tree, &missing_key, rb_test_node_cmp_void);
+    assert(n == NULL);
+
+    n = rb_tree_search_sloppy(tree, &missing_key, rb_test_node_cmp_void);
+    if (rb_tree_is_empty(tree)) {
+        assert(n == NULL);
+    } else {
+        assert(n != NULL);
+        tn = rb_node_data(struct rb_test_node, n, node);
+        assert(tn->key != missing_key);
+        if (tn->key < missing_key) {
+            struct rb_node *next = rb_node_next(n);
+            if (next != NULL) {
+                struct rb_test_node *tnext =
+                    rb_node_data(struct rb_test_node, next, node);
+                assert(missing_key < tnext->key);
+            }
+        } else {
+            struct rb_node *prev = rb_node_prev(n);
+            if (prev != NULL) {
+                struct rb_test_node *tprev =
+                    rb_node_data(struct rb_test_node, prev, node);
+                assert(missing_key > tprev->key);
+            }
+        }
+    }
+}
+
 int main()
 {
     struct rb_test_node nodes[ARRAY_SIZE(test_numbers)];
@@ -111,11 +172,13 @@ int main()
         rb_tree_insert(&tree, &nodes[i].node, rb_test_node_cmp);
         rb_tree_validate(&tree);
         validate_tree_order(&tree, i + 1);
+        validate_search(&tree, 0, i);
     }
 
     for (unsigned i = 0; i < ARRAY_SIZE(test_numbers); i++) {
         rb_tree_remove(&tree, &nodes[i].node);
         rb_tree_validate(&tree);
         validate_tree_order(&tree, ARRAY_SIZE(test_numbers) - i - 1);
+        validate_search(&tree, i + 1, ARRAY_SIZE(test_numbers) - 1);
     }
 }

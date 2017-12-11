@@ -145,6 +145,76 @@ rb_tree_insert(struct rb_tree *T, struct rb_node *node,
  */
 void rb_tree_remove(struct rb_tree *T, struct rb_node *z);
 
+/** Search the tree for a node
+ *
+ * If a node with a matching key exists, the first matching node found will
+ * be returned.  If no matching node exists, NULL is returned.
+ *
+ * \param   T       The red-black tree to search
+ *
+ * \param   key     The key to search for
+ *
+ * \param   cmp     A comparison function to use to order the nodes
+ */
+static inline struct rb_node *
+rb_tree_search(struct rb_tree *T, const void *key,
+               int (*cmp)(const struct rb_node *, const void *))
+{
+    /* This function is declared inline in the hopes that the compiler can
+     * optimize away the comparison function pointer call.
+     */
+    struct rb_node *x = T->root;
+    while (x != NULL) {
+        int c = cmp(x, key);
+        if (c < 0)
+            x = x->right;
+        else if (c > 0)
+            x = x->left;
+        else
+            return x;
+    }
+
+    return x;
+}
+
+/** Sloppily search the tree for a node
+ *
+ * This function searches the tree for a given node.  If a node with a
+ * matching key exists, that first matching node found will be returned.
+ * If no node with an exactly matching key exists, the node returned will
+ * be either the right-most node comparing less than \p key or the
+ * right-most node comparing greater than \p key.  If the tree is empty,
+ * NULL is returned.
+ *
+ * \param   T       The red-black tree to search
+ *
+ * \param   key     The key to search for
+ *
+ * \param   cmp     A comparison function to use to order the nodes
+ */
+static inline struct rb_node *
+rb_tree_search_sloppy(struct rb_tree *T, const void *key,
+                      int (*cmp)(const struct rb_node *, const void *))
+{
+    /* This function is declared inline in the hopes that the compiler can
+     * optimize away the comparison function pointer call.
+     */
+    struct rb_node *y = NULL;
+    struct rb_node *x = T->root;
+    while (x != NULL) {
+        y = x;
+        int c = cmp(x, key);
+        if (c < 0)
+            x = x->right;
+        else if (c > 0)
+            x = x->left;
+        else
+            return x;
+    }
+
+    return y;
+}
+
 /** Get the first (left-most) node in the tree or NULL */
 struct rb_node *rb_tree_first(struct rb_tree *T);
 
