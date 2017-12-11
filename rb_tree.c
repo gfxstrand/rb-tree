@@ -99,13 +99,12 @@ rb_tree_init(struct rb_tree *T)
  *
  * This is called RB-transplant in CLRS.
  *
- * Both nodes are assumed to be non-leaves
+ * The node to be replaced is assumed to be a non-leaf.
  */
 static void
 rb_tree_splice(struct rb_tree *T, struct rb_node *u, struct rb_node *v)
 {
     RB_TREE_ASSERT(u);
-    RB_TREE_ASSERT(v);
 
     struct rb_node *p = rb_node_parent(u);
     if (p == NULL) {
@@ -116,7 +115,8 @@ rb_tree_splice(struct rb_tree *T, struct rb_node *u, struct rb_node *v)
     } else {
         p->right = v;
     }
-    rb_node_set_parent(v, p);
+    if (v)
+        rb_node_set_parent(v, p);
 }
 
 static void
