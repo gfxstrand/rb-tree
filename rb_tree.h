@@ -141,8 +141,14 @@ void rb_tree_remove(struct rb_tree *T, struct rb_node *z);
 /** Get the first (left-most) node in the tree or NULL */
 struct rb_node *rb_tree_first(struct rb_tree *T);
 
+/** Get the last (right-most) node in the tree or NULL */
+struct rb_node *rb_tree_last(struct rb_tree *T);
+
 /** Get the next node (to the right) in the tree or NULL */
 struct rb_node *rb_node_next(struct rb_node *node);
+
+/** Get the next previous (to the left) in the tree or NULL */
+struct rb_node *rb_node_prev(struct rb_node *node);
 
 /** Iterate over the nodes in the tree
  *
@@ -159,6 +165,22 @@ struct rb_node *rb_node_next(struct rb_node *node);
    for (type *node = rb_node_data(type, rb_tree_first(T), field); \
         &node->field != NULL; \
         node = rb_node_data(type, rb_node_next(&node->field), field))
+
+/** Iterate over the nodes in the tree in reverse
+ *
+ * \param   type    The type of the containing data structure
+ *
+ * \param   node    The variable name for current node in the iteration;
+ *                  this will be declared as a pointer to \p type
+ *
+ * \param   T       The red-black tree
+ *
+ * \param   field   The rb_node field in containing data structure
+ */
+#define rb_tree_foreach_rev(type, node, T, field) \
+   for (type *node = rb_node_data(type, rb_tree_last(T), field); \
+        &node->field != NULL; \
+        node = rb_node_data(type, rb_node_prev(&node->field), field))
 
 /** Validate a red-black tree
  *

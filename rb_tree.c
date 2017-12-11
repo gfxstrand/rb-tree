@@ -79,6 +79,14 @@ rb_node_minimum(struct rb_node *node)
     return node;
 }
 
+static struct rb_node *
+rb_node_maximum(struct rb_node *node)
+{
+    while (node->right)
+        node = node->right;
+    return node;
+}
+
 void
 rb_tree_init(struct rb_tree *T)
 {
@@ -327,6 +335,12 @@ rb_tree_first(struct rb_tree *T)
 }
 
 struct rb_node *
+rb_tree_last(struct rb_tree *T)
+{
+    return T->root ? rb_node_maximum(T->root) : NULL;
+}
+
+struct rb_node *
 rb_node_next(struct rb_node *node)
 {
     if (node->right) {
@@ -344,6 +358,28 @@ rb_node_next(struct rb_node *node)
             p = rb_node_parent(node);
         }
         RB_TREE_ASSERT(p == NULL || node == p->left);
+        return p;
+    }
+}
+
+struct rb_node *
+rb_node_prev(struct rb_node *node)
+{
+    if (node->left) {
+        /* If we have a left child, then the previous thing (compared to
+         * this node) is the right-most child of our left child.
+         */
+        return rb_node_maximum(node->left);
+    } else {
+        /* If node doesn't have a left child, crawl back up the to the
+         * right until we hit a parent to the left.
+         */
+        struct rb_node *p = rb_node_parent(node);
+        while (p && node == p->left) {
+            node = p;
+            p = rb_node_parent(node);
+        }
+        RB_TREE_ASSERT(p == NULL || node == p->right);
         return p;
     }
 }

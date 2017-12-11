@@ -76,6 +76,27 @@ validate_tree_order(struct rb_tree *tree, unsigned expected_count)
         count++;
     }
     assert(count == expected_count);
+
+    prev = NULL;
+    unsigned min_val = UINT_MAX;
+    count = 0;
+    rb_tree_foreach_rev(struct rb_test_node, n, tree, node) {
+        /* Everything should be in increasing order */
+        assert(n->key <= min_val);
+        if (n->key < min_val) {
+            min_val = n->key;
+        } else {
+            /* Things should be stable, i.e., given equal keys, they should
+             * show up in the list in order of insertion.  We insert them
+             * in the order they are in in the array.
+             */
+            if (prev == NULL || prev > n);
+        }
+
+        prev = n;
+        count++;
+    }
+    assert(count == expected_count);
 }
 
 int main()
