@@ -28,20 +28,51 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/** A red-black tree node
+ *
+ * This struct represents a node in the red-black tree.  This struct should
+ * be embedded as a member in whatever structure you wish to put in the
+ * tree.
+ */
 struct rb_node {
+    /** Parent and color of this node
+     *
+     * The least significant bit represents the color and is est to 1 for
+     * black and 0 for red.  The other bits are the pointer to the parent
+     * and that pointer can be retrieved by masking off the bottom bit and
+     * casting to a pointer.
+     */
     uintptr_t parent;
+
+    /** Left child of this node, null for a leaf */
     struct rb_node *left;
+
+    /** Right child of this node, null for a leaf */
     struct rb_node *right;
 };
 
+/** A red-black tree
+ *
+ * This struct represents the red-black tree itself.  It is just a pointer
+ * to the root node with no other metadata.
+ */
 struct rb_tree {
     struct rb_node *root;
 };
 
+/** Initialize a red-black tree */
 void rb_tree_init(struct rb_tree *T);
 
-#define rb_node_data(__type, __node, __field) \
-    ((__type *)(((char *)(__node)) - offsetof(__type, __field)))
+/** Retrieve the data structure containing a node
+ *
+ * \param   type    The type of the containing data structure
+ *
+ * \param   node    A pointer to a rb_node
+ *
+ * \param   field   The rb_node field in the containing data structure
+ */
+#define rb_node_data(type, node, field) \
+    ((type *)(((char *)(node)) - offsetof(type, field)))
 
 /** Insert a node into a tree at a particular location
  *
@@ -100,14 +131,27 @@ rb_tree_insert(struct rb_tree *T, struct rb_node *node,
  */
 void rb_tree_remove(struct rb_tree *T, struct rb_node *z);
 
+/** Get the first (left-most) node in the tree or NULL */
 struct rb_node *rb_tree_first(struct rb_tree *T);
 
+/** Get the next node (to the right) in the tree or NULL */
 struct rb_node *rb_node_next(struct rb_node *node);
 
-#define rb_tree_foreach(__type, __pos, __T, __field) \
-   for (__type *__pos = rb_node_data(__type, rb_tree_first(__T), __field); \
-        &__pos->__field != NULL; \
-        __pos = rb_node_data(__type, rb_node_next(&__pos->__field), __field))
+/** Iterate over the nodes in the tree
+ *
+ * \param   type    The type of the containing data structure
+ *
+ * \param   node    The variable name for current node in the iteration;
+ *                  this will be declared as a pointer to \p type
+ *
+ * \param   T       The red-black tree
+ *
+ * \param   field   The rb_node field in containing data structure
+ */
+#define rb_tree_foreach(type, node, T, field) \
+   for (type *node = rb_node_data(type, rb_tree_first(T), field); \
+        &node->field != NULL; \
+        node = rb_node_data(type, rb_node_next(&node->field), field))
 
 /** Validate a red-black tree
  *
