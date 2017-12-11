@@ -226,15 +226,20 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
 void
 rb_tree_remove(struct rb_tree *T, struct rb_node *z)
 {
-    struct rb_node *x;
+    /* x_p is always the parent node of X.  We have to track this
+     * separately because x may be NULL.
+     */
+    struct rb_node *x, *x_p;
     struct rb_node *y = z;
     bool y_was_black = rb_node_is_black(y);
     if (z->left == NULL) {
         x = z->right;
-        rb_tree_splice(T, z, z->right);
+        x_p = rb_node_parent(z);
+        rb_tree_splice(T, z, x);
     } else if (z->right == NULL) {
         x = z->left;
-        rb_tree_splice(T, z, z->left);
+        x_p = rb_node_parent(z);
+        rb_tree_splice(T, z, x);
     } else {
         /* Find the minimum sub-node of z->right */
         y = rb_node_minimum(z->right);
@@ -242,13 +247,14 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
 
         x = y->right;
         if (rb_node_parent(y) == z) {
-            if (x)
-                rb_node_set_parent(x, y);
+            x_p = y;
         } else {
-            rb_tree_splice(T, y, y->right);
+            x_p = rb_node_parent(y);
+            rb_tree_splice(T, y, x);
             y->right = z->right;
             rb_node_set_parent(y->right, y);
         }
+        RB_TREE_ASSERT(y->left == NULL);
         rb_tree_splice(T, z, y);
         y->left = z->left;
         rb_node_set_parent(y->left, y);
@@ -260,57 +266,61 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
 
     /* Fixup RB tree after the delete */
     while (x != T->root && rb_node_is_black(x)) {
-        if (x == rb_node_parent(x)->left) {
-            struct rb_node *w = rb_node_parent(x)->right;
+        if (x == x_p->left) {
+            struct rb_node *w = x_p->right;
             if (rb_node_is_red(w)) {
                 rb_node_set_black(w);
-                rb_node_set_red(rb_node_parent(x));
-                rb_tree_rotate_left(T, rb_node_parent(x));
-                w = rb_node_parent(x)->right;
+                rb_node_set_red(x_p);
+                rb_tree_rotate_left(T, x_p);
+                RB_TREE_ASSERT(x == x_p->left);
+                w = x_p->right;
             }
             if (rb_node_is_black(w->left) && rb_node_is_black(w->right)) {
                 rb_node_set_red(w);
-                x = rb_node_parent(x);
+                x = x_p;
             } else {
                 if (rb_node_is_black(w->right)) {
                     rb_node_set_black(w->left);
                     rb_node_set_red(w);
                     rb_tree_rotate_right(T, w);
-                    w = rb_node_parent(x)->right;
+                    w = x_p->right;
                 }
-                rb_node_copy_color(w, rb_node_parent(x));
-                rb_node_set_black(rb_node_parent(x));
+                rb_node_copy_color(w, x_p);
+                rb_node_set_black(x_p);
                 rb_node_set_black(w->right);
-                rb_tree_rotate_left(T, rb_node_parent(x));
+                rb_tree_rotate_left(T, x_p);
                 x = T->root;
             }
         } else {
-            struct rb_node *w = rb_node_parent(x)->left;
+            struct rb_node *w = x_p->left;
             if (rb_node_is_red(w)) {
                 rb_node_set_black(w);
-                rb_node_set_red(rb_node_parent(x));
-                rb_tree_rotate_right(T, rb_node_parent(x));
-                w = rb_node_parent(x)->left;
+                rb_node_set_red(x_p);
+                rb_tree_rotate_right(T, x_p);
+                RB_TREE_ASSERT(x == x_p->right);
+                w = x_p->left;
             }
             if (rb_node_is_black(w->right) && rb_node_is_black(w->left)) {
                 rb_node_set_red(w);
-                x = rb_node_parent(x);
+                x = x_p;
             } else {
                 if (rb_node_is_black(w->left)) {
                     rb_node_set_black(w->right);
                     rb_node_set_red(w);
                     rb_tree_rotate_left(T, w);
-                    w = rb_node_parent(x)->left;
+                    w = x_p->left;
                 }
-                rb_node_copy_color(w, rb_node_parent(x));
-                rb_node_set_black(rb_node_parent(x));
+                rb_node_copy_color(w, x_p);
+                rb_node_set_black(x_p);
                 rb_node_set_black(w->left);
-                rb_tree_rotate_right(T, rb_node_parent(x));
+                rb_tree_rotate_right(T, x_p);
                 x = T->root;
             }
         }
+        x_p = rb_node_parent(x);
     }
-    rb_node_set_black(x);
+    if (x)
+        rb_node_set_black(x);
 }
 
 struct rb_node *
