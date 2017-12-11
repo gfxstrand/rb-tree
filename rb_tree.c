@@ -65,14 +65,6 @@ rb_node_copy_color(struct rb_node *dst, struct rb_node *src)
     dst->parent = (dst->parent & ~1ull) | (src->parent & 1);
 }
 
-static struct rb_node *
-rb_node_parent(struct rb_node *n)
-{
-    struct rb_node *p = (struct rb_node *)(n->parent & ~1ull);
-    RB_TREE_ASSERT(p == NULL || n == p->left || n == p->right);
-    return p;
-}
-
 static void
 rb_node_set_parent(struct rb_node *n, struct rb_node *p)
 {
@@ -112,6 +104,7 @@ rb_tree_splice(struct rb_tree *T, struct rb_node *u, struct rb_node *v)
     } else if (u == p->left) {
         p->left = v;
     } else {
+        RB_TREE_ASSERT(u == p->right);
         p->right = v;
     }
     if (v)
@@ -177,6 +170,7 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
     struct rb_node *z = node;
     while (rb_node_is_red(rb_node_parent(z))) {
         struct rb_node *z_p = rb_node_parent(z);
+        RB_TREE_ASSERT(z == z_p->left || z == z_p->right);
         struct rb_node *z_p_p = rb_node_parent(z_p);
         RB_TREE_ASSERT(z_p_p != NULL);
         if (z_p == z_p_p->left) {
@@ -192,6 +186,7 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
                     rb_tree_rotate_left(T, z);
                     /* We changed z */
                     z_p = rb_node_parent(z);
+                    RB_TREE_ASSERT(z == z_p->left || z == z_p->right);
                     z_p_p = rb_node_parent(z_p);
                 }
                 rb_node_set_black(z_p);
@@ -211,6 +206,7 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
                     rb_tree_rotate_right(T, z);
                     /* We changed z */
                     z_p = rb_node_parent(z);
+                    RB_TREE_ASSERT(z == z_p->left || z == z_p->right);
                     z_p_p = rb_node_parent(z_p);
                 }
                 rb_node_set_black(z_p);
@@ -259,6 +255,8 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
         rb_node_set_parent(y->left, y);
         rb_node_copy_color(y, z);
     }
+
+    RB_TREE_ASSERT(x_p == NULL || x == x_p->left || x == x_p->right);
 
     if (!y_was_black)
         return;

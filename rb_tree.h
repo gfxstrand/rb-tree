@@ -51,6 +51,13 @@ struct rb_node {
     struct rb_node *right;
 };
 
+/** Return the parent node of the given node or NULL if it is the root */
+static struct rb_node *
+rb_node_parent(struct rb_node *n)
+{
+    return (struct rb_node *)(n->parent & ~1ull);
+}
+
 /** A red-black tree
  *
  * This struct represents the red-black tree itself.  It is just a pointer
