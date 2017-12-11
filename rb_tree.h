@@ -70,6 +70,13 @@ struct rb_tree {
 /** Initialize a red-black tree */
 void rb_tree_init(struct rb_tree *T);
 
+/** Returns true if the red-black tree is empty */
+static inline bool
+rb_tree_is_empty(const struct rb_tree *T)
+{
+    return T->root == NULL;
+}
+
 /** Retrieve the data structure containing a node
  *
  * \param   type    The type of the containing data structure
