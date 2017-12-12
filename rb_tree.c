@@ -22,6 +22,19 @@
 
 #include "rb_tree.h"
 
+/** \file rb_tree.c
+ *
+ * An implementation of a red-black tree
+ *
+ * This file implements the guts of a red-black tree.  The implementation
+ * is mostly based on the one in "Introduction to Algorithms", third
+ * edition, by Cormen, Leiserson, Rivest, and Stein.  The primary
+ * divergence in our algorithms from those presented in CLRS is that we use
+ * NULL for the leaves instead of a sentinel.  This means we have to do a
+ * tiny bit more tracking in our implementation of delete but it makes the
+ * algorithms far more explicit than stashing stuff in the sentinel.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
