@@ -26,14 +26,6 @@
 #include <string.h>
 #include <assert.h>
 
-#define RB_TREE_ENABLE_ASSERTS
-
-#ifdef RB_TREE_ENABLE_ASSERTS
-#   define RB_TREE_ASSERT(...) assert(__VA_ARGS__)
-#else
-#   define RB_TREE_ASSERT(...) (void)0
-#endif
-
 static bool
 rb_node_is_black(struct rb_node *n)
 {
@@ -103,16 +95,15 @@ rb_tree_init(struct rb_tree *T)
 static void
 rb_tree_splice(struct rb_tree *T, struct rb_node *u, struct rb_node *v)
 {
-    RB_TREE_ASSERT(u);
-
+    assert(u);
     struct rb_node *p = rb_node_parent(u);
     if (p == NULL) {
-        RB_TREE_ASSERT(T->root == u);
+        assert(T->root == u);
         T->root = v;
     } else if (u == p->left) {
         p->left = v;
     } else {
-        RB_TREE_ASSERT(u == p->right);
+        assert(u == p->right);
         p->right = v;
     }
     if (v)
@@ -122,8 +113,7 @@ rb_tree_splice(struct rb_tree *T, struct rb_node *u, struct rb_node *v)
 static void
 rb_tree_rotate_left(struct rb_tree *T, struct rb_node *x)
 {
-    RB_TREE_ASSERT(x);
-    RB_TREE_ASSERT(x->right);
+    assert(x && x->right);
 
     struct rb_node *y = x->right;
     x->right = y->left;
@@ -137,8 +127,7 @@ rb_tree_rotate_left(struct rb_tree *T, struct rb_node *x)
 static void
 rb_tree_rotate_right(struct rb_tree *T, struct rb_node *y)
 {
-    RB_TREE_ASSERT(y);
-    RB_TREE_ASSERT(y->left);
+    assert(y && y->left);
 
     struct rb_node *x = y->left;
     y->left = x->right;
@@ -153,23 +142,21 @@ void
 rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
                   struct rb_node *node, bool insert_left)
 {
-    RB_TREE_ASSERT(node);
-
     /* This sets null children, parent, and a color of red */
     memset(node, 0, sizeof(*node));
 
     if (parent == NULL) {
-        RB_TREE_ASSERT(T->root == NULL);
+        assert(T->root == NULL);
         T->root = node;
         rb_node_set_black(node);
         return;
     }
 
     if (insert_left) {
-        RB_TREE_ASSERT(parent->left == NULL);
+        assert(parent->left == NULL);
         parent->left = node;
     } else {
-        RB_TREE_ASSERT(parent->right == NULL);
+        assert(parent->right == NULL);
         parent->right = node;
     }
     rb_node_set_parent(node, parent);
@@ -178,9 +165,9 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
     struct rb_node *z = node;
     while (rb_node_is_red(rb_node_parent(z))) {
         struct rb_node *z_p = rb_node_parent(z);
-        RB_TREE_ASSERT(z == z_p->left || z == z_p->right);
+        assert(z == z_p->left || z == z_p->right);
         struct rb_node *z_p_p = rb_node_parent(z_p);
-        RB_TREE_ASSERT(z_p_p != NULL);
+        assert(z_p_p != NULL);
         if (z_p == z_p_p->left) {
             struct rb_node *y = z_p_p->right;
             if (rb_node_is_red(y)) {
@@ -194,7 +181,7 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
                     rb_tree_rotate_left(T, z);
                     /* We changed z */
                     z_p = rb_node_parent(z);
-                    RB_TREE_ASSERT(z == z_p->left || z == z_p->right);
+                    assert(z == z_p->left || z == z_p->right);
                     z_p_p = rb_node_parent(z_p);
                 }
                 rb_node_set_black(z_p);
@@ -214,7 +201,7 @@ rb_tree_insert_at(struct rb_tree *T, struct rb_node *parent,
                     rb_tree_rotate_right(T, z);
                     /* We changed z */
                     z_p = rb_node_parent(z);
-                    RB_TREE_ASSERT(z == z_p->left || z == z_p->right);
+                    assert(z == z_p->left || z == z_p->right);
                     z_p_p = rb_node_parent(z_p);
                 }
                 rb_node_set_black(z_p);
@@ -257,14 +244,14 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
             y->right = z->right;
             rb_node_set_parent(y->right, y);
         }
-        RB_TREE_ASSERT(y->left == NULL);
+        assert(y->left == NULL);
         rb_tree_splice(T, z, y);
         y->left = z->left;
         rb_node_set_parent(y->left, y);
         rb_node_copy_color(y, z);
     }
 
-    RB_TREE_ASSERT(x_p == NULL || x == x_p->left || x == x_p->right);
+    assert(x_p == NULL || x == x_p->left || x == x_p->right);
 
     if (!y_was_black)
         return;
@@ -277,7 +264,7 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
                 rb_node_set_black(w);
                 rb_node_set_red(x_p);
                 rb_tree_rotate_left(T, x_p);
-                RB_TREE_ASSERT(x == x_p->left);
+                assert(x == x_p->left);
                 w = x_p->right;
             }
             if (rb_node_is_black(w->left) && rb_node_is_black(w->right)) {
@@ -302,7 +289,7 @@ rb_tree_remove(struct rb_tree *T, struct rb_node *z)
                 rb_node_set_black(w);
                 rb_node_set_red(x_p);
                 rb_tree_rotate_right(T, x_p);
-                RB_TREE_ASSERT(x == x_p->right);
+                assert(x == x_p->right);
                 w = x_p->left;
             }
             if (rb_node_is_black(w->right) && rb_node_is_black(w->left)) {
@@ -357,7 +344,7 @@ rb_node_next(struct rb_node *node)
             node = p;
             p = rb_node_parent(node);
         }
-        RB_TREE_ASSERT(p == NULL || node == p->left);
+        assert(p == NULL || node == p->left);
         return p;
     }
 }
@@ -379,7 +366,7 @@ rb_node_prev(struct rb_node *node)
             node = p;
             p = rb_node_parent(node);
         }
-        RB_TREE_ASSERT(p == NULL || node == p->right);
+        assert(p == NULL || node == p->right);
         return p;
     }
 }
@@ -409,7 +396,7 @@ rb_tree_validate(struct rb_tree *T)
     if (T->root == NULL)
         return;
 
-    RB_TREE_ASSERT(rb_node_is_black(T->root));
+    assert(rb_node_is_black(T->root));
 
     unsigned black_depth = 0;
     for (struct rb_node *n = T->root; n; n = n->left) {
