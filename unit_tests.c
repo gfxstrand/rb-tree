@@ -50,14 +50,14 @@ struct rb_test_node {
     struct rb_node node;
 };
 
-int
+static int
 rb_test_node_cmp_void(const struct rb_node *n, const void *v)
 {
     struct rb_test_node *tn = rb_node_data(struct rb_test_node, n, node);
     return tn->key - *(unsigned *)v;
 }
 
-int
+static int
 rb_test_node_cmp(const struct rb_node *a, const struct rb_node *b)
 {
     struct rb_test_node *ta = rb_node_data(struct rb_test_node, a, node);
@@ -160,7 +160,8 @@ validate_search(struct rb_tree *tree, unsigned first_number,
     }
 }
 
-int main()
+int
+main()
 {
     struct rb_test_node nodes[ARRAY_SIZE(test_numbers)];
     struct rb_tree tree;
