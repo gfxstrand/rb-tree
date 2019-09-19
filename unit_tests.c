@@ -28,7 +28,7 @@
 /* A list of 100 random numbers from 1 to 100.  The number 30 is explicitly
  * missing from this list.
  */
-unsigned test_numbers[] = {
+int test_numbers[] = {
     26, 12, 35, 15, 48, 11, 39, 23, 40, 18,
     39, 15, 40, 11, 42, 2, 5, 2, 28, 8,
     10, 22, 23, 38, 47, 12, 31, 22, 26, 39,
@@ -46,7 +46,7 @@ unsigned test_numbers[] = {
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(*a))
 
 struct rb_test_node {
-    unsigned key;
+    int key;
     struct rb_node node;
 };
 
@@ -54,7 +54,7 @@ static int
 rb_test_node_cmp_void(const struct rb_node *n, const void *v)
 {
     struct rb_test_node *tn = rb_node_data(struct rb_test_node, n, node);
-    return tn->key - *(unsigned *)v;
+    return tn->key - *(int *)v;
 }
 
 static int
@@ -70,7 +70,7 @@ static void
 validate_tree_order(struct rb_tree *tree, unsigned expected_count)
 {
     struct rb_test_node *prev = NULL;
-    unsigned max_val = 0;
+    int max_val = -1;
     unsigned count = 0;
     rb_tree_foreach(struct rb_test_node, n, tree, node) {
         /* Everything should be in increasing order */
@@ -91,7 +91,7 @@ validate_tree_order(struct rb_tree *tree, unsigned expected_count)
     assert(count == expected_count);
 
     prev = NULL;
-    unsigned min_val = UINT_MAX;
+    int min_val = INT_MAX;
     count = 0;
     rb_tree_foreach_rev(struct rb_test_node, n, tree, node) {
         /* Everything should be in increasing order */
@@ -113,14 +113,14 @@ validate_tree_order(struct rb_tree *tree, unsigned expected_count)
 }
 
 static void
-validate_search(struct rb_tree *tree, unsigned first_number,
-                unsigned last_number)
+validate_search(struct rb_tree *tree, int first_number,
+                int last_number)
 {
     struct rb_node *n;
     struct rb_test_node *tn;
 
     /* Search for all of the values */
-    for (unsigned i = first_number; i <= last_number; i++) {
+    for (int i = first_number; i <= last_number; i++) {
         n = rb_tree_search(tree, &test_numbers[i], rb_test_node_cmp_void);
         tn = rb_node_data(struct rb_test_node, n, node);
         assert(tn->key == test_numbers[i]);
@@ -131,7 +131,7 @@ validate_search(struct rb_tree *tree, unsigned first_number,
         assert(tn->key == test_numbers[i]);
     }
 
-    unsigned missing_key = NON_EXISTANT_NUMBER;
+    int missing_key = NON_EXISTANT_NUMBER;
     n = rb_tree_search(tree, &missing_key, rb_test_node_cmp_void);
     assert(n == NULL);
 
